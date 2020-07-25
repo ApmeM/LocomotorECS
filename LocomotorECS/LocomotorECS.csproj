@@ -5,4 +5,11 @@
     <Company>ApmeM</Company>
     <Copyright>Copyright ©  2019</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+    <_Parameter1>LocomotorECS.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
