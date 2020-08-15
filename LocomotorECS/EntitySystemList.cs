@@ -4,9 +4,13 @@
     using System.Collections;
     using System.Collections.Generic;
 
+    using LocomotorECS.Utils;
+
     public class EntitySystemList : IEnumerable<EntitySystem>
     {
-        private readonly List<EntitySystem> processors = new List<EntitySystem>();
+        private List<EntitySystem> processors = new List<EntitySystem>();
+        private readonly Dictionary<EntitySystem, List<EntitySystem>> dependencies = new Dictionary<EntitySystem, List<EntitySystem>>();
+        private bool needSorting;
 
         public EntitySystemList(EntityList entityList)
         {
@@ -15,14 +19,43 @@
             entityList.EntityChanged += this.NotifyEntityChanged;
         }
 
-        public void Add( EntitySystem processor )
+        public void AddExecutionOrder<TBefore, TAfter>()
+            where TBefore : EntitySystem where TAfter : EntitySystem
         {
-            this.processors.Add( processor );
+            var executedBefore = this.Get<TBefore>();
+            var executedAfter = this.Get<TAfter>();
+
+            if (!this.dependencies.ContainsKey(executedBefore))
+            {
+                this.dependencies[executedBefore] = new List<EntitySystem>();
+            }
+
+            this.dependencies[executedBefore].Add(executedAfter);
+            this.needSorting = true;
         }
 
-        public void Remove( EntitySystem processor )
+        public void RemoveExecutionOrder<TBefore, TAfter>()
+            where TBefore : EntitySystem where TAfter : EntitySystem
         {
-            this.processors.Remove( processor );
+            var executedBefore = this.Get<TBefore>();
+            var executedAfter = this.Get<TAfter>();
+
+            if (!this.dependencies.ContainsKey(executedBefore))
+            {
+                return;
+            }
+
+            this.dependencies[executedBefore].Remove(executedAfter);
+        }
+
+        public void Add(EntitySystem processor)
+        {
+            this.processors.Add(processor);
+        }
+
+        public void Remove(EntitySystem processor)
+        {
+            this.processors.Remove(processor);
         }
 
         public T Get<T>() where T : EntitySystem
@@ -39,6 +72,7 @@
 
         public void NotifyBegin()
         {
+            this.EnsureSorted();
             for (var i = 0; i < this.processors.Count; i++)
             {
                 this.processors[i].Begin();
@@ -47,6 +81,7 @@
 
         public void NotifyDoAction(TimeSpan gameTime)
         {
+            this.EnsureSorted();
             for (var i = 0; i < this.processors.Count; i++)
             {
                 this.processors[i].DoAction(gameTime);
@@ -55,6 +90,7 @@
 
         public void NotifyEnd()
         {
+            this.EnsureSorted();
             for (var i = 0; i < this.processors.Count; i++)
             {
                 this.processors[i].End();
@@ -63,7 +99,19 @@
 
         public IEnumerator<EntitySystem> GetEnumerator()
         {
+            this.EnsureSorted();
             return this.processors.GetEnumerator();
+        }
+
+        private void EnsureSorted()
+        {
+            if (!this.needSorting)
+            {
+                return;
+            }
+
+            this.needSorting = false;
+            this.processors = DfsSort.Sort(this.processors, this.dependencies);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
