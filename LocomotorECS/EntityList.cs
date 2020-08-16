@@ -1,10 +1,9 @@
 namespace LocomotorECS
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
 
-    public class EntityList : IEnumerable<Entity>
+    public class EntityList
     {
         private readonly List<Entity> entities = new List<Entity>();
 
@@ -123,16 +122,6 @@ namespace LocomotorECS
             }
 
             return list;
-        }
-
-        public IEnumerator<Entity> GetEnumerator()
-        {
-            return this.entities.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
 
         private void AddToTagList(Entity entity)

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public class Entity
     {
@@ -88,11 +87,6 @@
         public T GetOrCreateComponent<T>() where T : Component, new()
         {
             return this.Components.GetOrCreate<T>();
-        }
-
-        public List<Component> GetAllComponents()
-        {
-            return this.Components.ToList();
         }
 
         public void RemoveComponent<T>() where T : Component

@@ -1,13 +1,11 @@
 ﻿namespace LocomotorECS
 {
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Runtime.CompilerServices;
 
     using LocomotorECS.Matching;
 
-    public class ComponentList : IEnumerable<Component>
+    public class ComponentList
     {
         private readonly Entity entity;
 
@@ -26,16 +24,6 @@
         public ComponentList( Entity entity )
         {
             this.entity = entity;
-        }
-
-        public IEnumerator<Component> GetEnumerator()
-        {
-            return this.components.Values.Union(this.componentsToAdd.Values).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
 
         public T Add<T>() where T : Component, new()

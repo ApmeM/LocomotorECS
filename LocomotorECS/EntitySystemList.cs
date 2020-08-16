@@ -6,7 +6,7 @@
 
     using LocomotorECS.Utils;
 
-    public class EntitySystemList : IEnumerable<EntitySystem>
+    public class EntitySystemList
     {
         private List<EntitySystem> processors = new List<EntitySystem>();
         private readonly Dictionary<EntitySystem, List<EntitySystem>> dependencies = new Dictionary<EntitySystem, List<EntitySystem>>();
@@ -97,12 +97,6 @@
             }
         }
 
-        public IEnumerator<EntitySystem> GetEnumerator()
-        {
-            this.EnsureSorted();
-            return this.processors.GetEnumerator();
-        }
-
         private void EnsureSorted()
         {
             if (!this.needSorting)
@@ -112,11 +106,6 @@
 
             this.needSorting = false;
             this.processors = DfsSort.Sort(this.processors, this.dependencies);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
 
         private void NotifyEntityChanged(Entity entity)
