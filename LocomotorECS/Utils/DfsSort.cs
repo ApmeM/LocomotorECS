@@ -1,47 +1,47 @@
 namespace LocomotorECS.Utils
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     internal class DfsSort
     {
-        private static void Dfs<T>(T current, Dictionary<T, List<T>> edges, HashSet<T> used, List<T> result)
+        private static int Dfs<T>(T current, Dictionary<T, List<T>> edges, Dictionary<T, int> result)
         {
-            used.Add(current);
+            result[current] = 0;
 
             if (edges.ContainsKey(current))
             {
                 foreach (var dependent in edges[current])
                 {
-                    if (used.Contains(dependent))
+                    if (result.ContainsKey(dependent))
                     {
+                        result[current] = Math.Max(result[current], result[dependent] + 1);
                         continue;
                     }
 
-                    Dfs(dependent, edges, used, result);
+                    result[current] = Math.Max(result[current], Dfs(dependent, edges, result) + 1);
                 }
             }
 
-            result.Add(current);
+            return result[current];
         }
 
-        public static List<T> Sort<T>(List<T> items, Dictionary<T, List<T>> edges)
+        public static ILookup<int, T> Sort<T>(List<T> items, Dictionary<T, List<T>> edges)
         {
-            var used = new HashSet<T>();
-            var result = new List<T>();
+            var result = new Dictionary<T, int>(items.Count);
 
             foreach (var current in items)
             {
-                if (used.Contains(current))
+                if (result.ContainsKey(current))
                 {
                     continue;
                 }
 
-                Dfs(current, edges, used, result);
+                Dfs(current, edges, result);
             }
 
-            result.Reverse();
-
-            return result;
+            return result.OrderByDescending(a => a.Value).ToLookup(a => a.Value, a => a.Key);
         }
     }
 }

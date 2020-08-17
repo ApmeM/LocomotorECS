@@ -1,16 +1,20 @@
 ﻿namespace LocomotorECS
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     using LocomotorECS.Utils;
 
     public class EntitySystemList
     {
         private List<EntitySystem> processors = new List<EntitySystem>();
+        private ILookup<int, EntitySystem> sortedProcessors;
         private readonly Dictionary<EntitySystem, List<EntitySystem>> dependencies = new Dictionary<EntitySystem, List<EntitySystem>>();
-        private bool needSorting;
+        private bool needSorting = true;
+
+        public bool UseParallelism = false;
 
         public EntitySystemList(EntityList entityList)
         {
@@ -73,28 +77,56 @@
         public void NotifyBegin()
         {
             this.EnsureSorted();
-            for (var i = 0; i < this.processors.Count; i++)
-            {
-                this.processors[i].Begin();
-            }
+            foreach (var sortedGroup in this.sortedProcessors)
+
+                if (this.UseParallelism)
+                {
+                    Parallel.ForEach(sortedGroup, a => a.Begin());
+                }
+                else
+                {
+                    foreach (var processor in sortedGroup)
+                    {
+                        processor.Begin();
+                    }
+                }
         }
 
         public void NotifyDoAction(TimeSpan gameTime)
         {
             this.EnsureSorted();
-            for (var i = 0; i < this.processors.Count; i++)
+            foreach (var sortedGroup in this.sortedProcessors)
             {
-                this.processors[i].DoAction(gameTime);
+                if (this.UseParallelism)
+                {
+                    Parallel.ForEach(sortedGroup, a => a.DoAction(gameTime));
+                }
+                else
+                {
+                    foreach (var processor in sortedGroup)
+                    {
+                        processor.DoAction(gameTime);
+                    }
+                }
             }
         }
 
         public void NotifyEnd()
         {
             this.EnsureSorted();
-            for (var i = 0; i < this.processors.Count; i++)
-            {
-                this.processors[i].End();
-            }
+            foreach (var sortedGroup in this.sortedProcessors)
+
+                if (this.UseParallelism)
+                {
+                    Parallel.ForEach(sortedGroup, a => a.End());
+                }
+                else
+                {
+                    foreach (var processor in sortedGroup)
+                    {
+                        processor.End();
+                    }
+                }
         }
 
         private void EnsureSorted()
@@ -105,7 +137,7 @@
             }
 
             this.needSorting = false;
-            this.processors = DfsSort.Sort(this.processors, this.dependencies);
+            this.sortedProcessors = DfsSort.Sort(this.processors, this.dependencies);
         }
 
         private void NotifyEntityChanged(Entity entity)

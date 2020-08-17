@@ -1,6 +1,7 @@
 ﻿namespace LocomotorECS
 {
     using System;
+    using System.Threading.Tasks;
 
     using LocomotorECS.Matching;
 
@@ -9,6 +10,8 @@
     /// </summary>
     public abstract class EntityProcessingSystem : MatcherEntitySystem
     {
+        protected bool UseParallelism = false;
+
         protected EntityProcessingSystem( Matcher matcher ) : base( matcher )
         {
         }
@@ -16,9 +19,16 @@
         public override void DoAction(TimeSpan gameTime)
         {
             base.DoAction(gameTime);
-            for (var i = 0; i < this.MatchedEntities.Count; i++)
+            if (this.UseParallelism)
             {
-                this.DoAction(this.MatchedEntities[i], gameTime);
+                Parallel.ForEach(this.MatchedEntities, a => this.DoAction(a, gameTime));
+            }
+            else
+            {
+                for (var i = 0; i < this.MatchedEntities.Count; i++)
+                {
+                    this.DoAction(this.MatchedEntities[i], gameTime);
+                }
             }
         }
 
