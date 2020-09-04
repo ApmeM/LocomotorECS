@@ -60,6 +60,13 @@
         public void Remove(EntitySystem processor)
         {
             this.processors.Remove(processor);
+            this.dependencies.Remove(processor);
+            foreach (var data in this.dependencies)
+            {
+                data.Value.Remove(processor);
+            }
+
+            this.needSorting = true;
         }
 
         public T Get<T>() where T : EntitySystem
