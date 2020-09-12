@@ -19,11 +19,14 @@
         public override void DoAction(TimeSpan gameTime)
         {
             base.DoAction(gameTime);
+
+#if !Bridge
             if (this.UseParallelism)
             {
                 Parallel.ForEach(this.MatchedEntities, a => this.DoAction(a, gameTime));
             }
             else
+#endif
             {
                 for (var i = 0; i < this.MatchedEntities.Count; i++)
                 {

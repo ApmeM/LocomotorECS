@@ -85,12 +85,13 @@
         {
             this.EnsureSorted();
             foreach (var sortedGroup in this.sortedProcessors)
-
+#if !Bridge
                 if (this.UseParallelism)
                 {
                     Parallel.ForEach(sortedGroup, a => a.Begin());
                 }
                 else
+#endif
                 {
                     foreach (var processor in sortedGroup)
                     {
@@ -104,11 +105,13 @@
             this.EnsureSorted();
             foreach (var sortedGroup in this.sortedProcessors)
             {
+#if !Bridge
                 if (this.UseParallelism)
                 {
                     Parallel.ForEach(sortedGroup, a => a.DoAction(gameTime));
                 }
                 else
+#endif
                 {
                     foreach (var processor in sortedGroup)
                     {
@@ -122,18 +125,21 @@
         {
             this.EnsureSorted();
             foreach (var sortedGroup in this.sortedProcessors)
-
+            {
+#if !Bridge
                 if (this.UseParallelism)
                 {
                     Parallel.ForEach(sortedGroup, a => a.End());
                 }
                 else
+#endif
                 {
                     foreach (var processor in sortedGroup)
                     {
                         processor.End();
                     }
                 }
+            }
         }
 
         private void EnsureSorted()
