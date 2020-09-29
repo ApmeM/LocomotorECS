@@ -56,7 +56,7 @@
         }
 
         [Test]
-        public void BeforeFirstCommit_NoEntitesHandled()
+        public void BeforeFirstCommit_NoEntitiesHandled()
         {
             var entity = new Entity();
             var component = new Component();

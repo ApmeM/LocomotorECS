@@ -7,7 +7,7 @@
     {
         #region properties and fields
         
-        public string Name;
+        public readonly string Name;
         
         internal event Action<Entity> BeforeTagChanged;
 
@@ -57,14 +57,10 @@
 
         #endregion
 
-        public Entity()
-        {
-            this.Components = new ComponentList(this);
-        }
-
-        public Entity(string name) : this()
+        public Entity(string name = null)
         {
             this.Name = name;
+            this.Components = new ComponentList(this);
         }
         
         #region Component Management

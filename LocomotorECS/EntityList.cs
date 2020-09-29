@@ -12,6 +12,7 @@ namespace LocomotorECS
         private readonly HashSet<Entity> entitiesToRemove = new HashSet<Entity>();
 
         private readonly Dictionary<int, List<Entity>> entityTagsDict = new Dictionary<int, List<Entity>>();
+        private readonly Dictionary<string, Entity> entityNamesDict = new Dictionary<string, Entity>();
 
         internal event Action<Entity> EntityRemoved;
         internal event Action<Entity> EntityAdded;
@@ -20,12 +21,19 @@ namespace LocomotorECS
         public void Add(Entity entity)
         {
             this.entitiesToAdd.Add(entity);
+            if (entity.Name != null)
+            {
+                this.entityNamesDict.Add(entity.Name, entity);
+            }
+
+            AddToTagList(entity);
         }
 
         public void Remove(Entity entity)
         {
             this.entitiesToAdd.Remove(entity);
             this.entitiesToRemove.Add(entity);
+            RemoveFromTagList(entity);
         }
         
         public void CommitChanges()
@@ -36,6 +44,10 @@ namespace LocomotorECS
                 {
                     this.RemoveFromTagList(entity);
                     this.entities.Remove(entity);
+                    if (entity.Name != null)
+                    {
+                        this.entityNamesDict.Remove(entity.Name);
+                    }
                     entity.BeforeTagChanged -= this.RemoveFromTagList;
                     entity.AfterTagChanged -= this.AddToTagList;
                 }
@@ -76,19 +88,17 @@ namespace LocomotorECS
 
         public Entity FindEntityByName(string name)
         {
-            for (var i = 0; i < this.entities.Count; i++)
+            if (name == null)
             {
-                if (this.entities[i].Name == name)
-                    return this.entities[i];
+                return null;
             }
 
-            foreach (var entity in this.entitiesToAdd)
+            if (!this.entityNamesDict.ContainsKey(name))
             {
-                if (entity.Name == name)
-                    return entity;
+                return null;
             }
 
-            return null;
+            return this.entityNamesDict[name];
         }
 
         public List<Entity> FindEntitiesByTag(int tag)
@@ -103,29 +113,13 @@ namespace LocomotorECS
             return this.entityTagsDict[tag];
         }
 
-        public List<Entity> FindEntitiesByType<T>()
-            where T : Entity
-        {
-            var list = new List<Entity>();
-            for (var i = 0; i < this.entities.Count; i++)
-            {
-                if (this.entities[i] is T)
-                    list.Add(this.entities[i]);
-            }
-
-            foreach (var entity in this.entitiesToAdd)
-            {
-                if (entity is T)
-                {
-                    list.Add(entity);
-                }
-            }
-
-            return list;
-        }
-
         private void AddToTagList(Entity entity)
         {
+            if (entity.Tag == 0)
+            {
+                return;
+            }
+
             var list = this.FindEntitiesByTag(entity.Tag);
             if (!list.Contains(entity))
             {
@@ -135,6 +129,11 @@ namespace LocomotorECS
 
         private void RemoveFromTagList(Entity entity)
         {
+            if (entity.Tag == 0)
+            {
+                return;
+            }
+
             List<Entity> list;
             if (this.entityTagsDict.TryGetValue(entity.Tag, out list))
             {
