@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>LocomotorECS-BridgeNet</id>
+    <version>1.0.0</version>
+    <title>LocomotorECS for Bridge.Net</title>
+    <authors>ApmeM</authors>
+    <owners>ApmeM</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>LocomotorECS is a set of helper classes to add ECS to your game.</description>
+    <copyright>Copyright © ApmeM 2019</copyright>
+    <dependencies>
+      <group targetFramework="net48">
+        <dependency id="Retyped.dom" version="2.8.6733" />
+        <dependency id="Bridge" version="17.6.0" />
+      </group>
+    </dependencies>
+    <repository type="git" url="https://github.com/ApmeM/LocomotorECS.git" />        
+  </metadata>
+  <files>
+     <file src="bin\Release\net48\LocomotorECS.dll" target="lib/net48" />
+     <file src="bin\Release\net48\bridge\**\*.*" target="content" /> 
+  </files>
+</package>
